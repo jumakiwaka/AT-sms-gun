@@ -1,0 +1,53 @@
+{
+  "name": "at-sms-gun",
+  "version": "1.0.0",
+  "description": "a cli app to blast sms's to user's using Africa'sTalking sms service",
+  "main": "index.js",
+  "bin": {
+    "at": "./bin/at.js"
+  },
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jumakiwaka/AT-sms-gun.git"
+  },
+  "keywords": [
+    "sms",
+    "blast",
+    "bulksms",
+    "africa'stalking",
+    "sms-service",
+    "africa'stalking-cli"
+  ],
+  "author": "jumakiwaka",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/jumakiwaka/AT-sms-gun/issues"
+  },
+  "homepage": "https://github.com/jumakiwaka/AT-sms-gun#readme",
+  "dependencies": {
+    "africastalking": "^0.5.2",
+    "chalk": "^4.1.0",
+    "commander": "^6.0.0",
+    "configstore": "^5.0.1",
+    "inquirer": "^7.3.3",
+    "update-notifier": "^4.1.0"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "eslint": "^7.6.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-config-standard": "^14.1.1",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "mocha": "^8.1.1"
+  }
+}
