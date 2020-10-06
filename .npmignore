@@ -1,0 +1,5 @@
+/test/
+.editorconfig
+.eslintrc.js
+/.nyc_output/
+coverage.lcov
