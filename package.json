@@ -1,6 +1,6 @@
 {
   "name": "at-sms-gun",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "a cli app to blast sms's to user's using Africa'sTalking sms service",
   "main": "index.js",
   "bin": {

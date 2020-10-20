@@ -1,76 +1,62 @@
-const AfricasTalking = require('africastalking');
-const path = require('path');
-const fs = require('fs');
-const { promisify } = require('util');
-const Vault = require('../lib/Vault');
 const util = require('../lib/util');
 
-const readFile = promisify(fs.readFile);
-
-const creds = new Vault();
-
-const { apiKey, username, senderId } = creds.getCredentials();
-
-const africasTalking = new AfricasTalking({
-  username,
-  apiKey,
-});
-
-const sms = africasTalking.SMS;
-
-async function sendMessages(contact, msg) {
+async function blastUsers(contactsFile) {
   try {
-    const status = await sms.send({
-      to: contact,
-      message: msg,
-      from: senderId,
-    });
-    console.log(status);
-  } catch (error) {
-    util.handleError(error);
-  }
-}
+    const blastInfo = await util.getBlastInfo(contactsFile);
+    if (blastInfo instanceof Error) {
+      throw blastInfo;
+    }
 
-async function getBlastInfo(filePath) {
-  try {
-    const csvFile = path.resolve(filePath);
-    const data = await readFile(csvFile, { encoding: 'utf8' });
+    /**
+     * Loops throw every row(containing contact and messages) and send messages to all contacts
+     * When a contact starts with 07 or 7 it(the 7 or 07) will be replaced with +2547
+     * When a message is same for all contacts, just concatinates the contacts into an array and
+     * calls AfricasTalking once, else call AT api for every row. As such a csv might have a list of
+     * contacts and only one message corresponding to the first contact i.e
+     * +2547xxxx, 'Mteja mpedwa....',
+     * +2547xxxx, '',
+     * etc.
+     */
 
-    const rows = data.split('\n').filter((_) => _.length > 0); // get all rows with content
+    const { body, contactCol, msgCol } = blastInfo;
 
-    const header = rows[0].split(',');
-    const msgCol = header.findIndex((col) => col.trim() === 'message');
-    const contactCol = header.findIndex((col) => col.trim() === 'contact');
-    const body = rows.slice(1);
-
-    const contacts = [];
+    let contacts = [];
     let msg;
+    const promises = [];
+
+    // loading anime
+    let isVertical = true;
 
     body.forEach((row) => {
-      const rowData = row.split(',');
+      const rowData = row.split(/(?!\B"[^"]*),(?![^"]*"\B)/);
+
       let contact = rowData[contactCol].trim();
-      const msgText = rowData[msgCol].trim();
-      if (contact.startsWith('07')) {
-        contact = '+2547'.concat(contact.substr(2));
-      }
-      if (msg === msgText) {
+      const msgText = rowData[msgCol].trim().slice(1, -1);
+
+      contact = util.formatPhoneNumber(contact);
+
+      if (contact && (msg === msgText || (!msgText && msg))) {
         contacts.push(`${contact}`);
       }
-      if (!msg || msg !== msgText) {
-        sendMessages(contact, msgText);
+      if (msg !== msgText && msgText) {
+        // msg is not equal to msgText and msgText is not an empty string
+
+        promises.push(util.sendMessages(contact, msgText));
+        // status.concat();
+        if (contacts[0]) {
+          contacts = [];
+        }
         msg = msgText;
       }
     });
-    if (contacts[0]) {
-      sendMessages(contacts, msg);
-    }
+
+    promises.push(util.sendMessages(contacts, msg));
+    const deliveryStatus = await Promise.all(promises);
+
+    console.log(deliveryStatus);
   } catch (error) {
     util.handleError(error);
   }
-}
-
-function blastUsers(contactsFile) {
-  getBlastInfo(contactsFile);
 }
 
 module.exports = { blastUsers };
